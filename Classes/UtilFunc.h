@@ -16,6 +16,8 @@ public:
 	static Size getWinSize();
 
 	static EaseRateAction* getRandomEaseAction(MoveTo* moveAction);
+
+	static Rect getTouchRect(Point touchP, int ThreadVal);
 };
 
 #endif

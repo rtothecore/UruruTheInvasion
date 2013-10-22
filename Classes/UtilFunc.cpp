@@ -48,3 +48,9 @@ EaseRateAction* UtilFunc::getRandomEaseAction(MoveTo* moveAction)
 
 	return easeAction;
 }
+
+Rect UtilFunc::getTouchRect(Point touchP, int ThreadVal)
+{
+	return Rect(touchP.x - ThreadVal, touchP.y - ThreadVal, ThreadVal*2, ThreadVal*2);
+}
+

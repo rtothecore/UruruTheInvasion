@@ -134,6 +134,8 @@ xcopy /Y /Q "$(ProjectDir)..\..\..\external\libwebsockets\win32\lib\*.*" "$(OutD
     <ClCompile Include="..\Classes\Alien.cpp" />
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\MainGameScene.cpp" />
+    <ClCompile Include="..\Classes\Particle.cpp" />
+    <ClCompile Include="..\Classes\Sound.cpp" />
     <ClCompile Include="..\Classes\UtilFunc.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -142,7 +144,11 @@ xcopy /Y /Q "$(ProjectDir)..\..\..\external\libwebsockets\win32\lib\*.*" "$(OutD
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\AppMacros.h" />
     <ClInclude Include="..\Classes\MainGameScene.h" />
+    <ClInclude Include="..\Classes\Particle.h" />
     <ClInclude Include="..\Classes\Resource.h" />
+    <ClInclude Include="..\Classes\Sound.h" />
+    <ClInclude Include="..\Classes\Tags.h" />
+    <ClInclude Include="..\Classes\UruruTIConfig.h" />
     <ClInclude Include="..\Classes\UtilFunc.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>

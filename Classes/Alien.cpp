@@ -1,11 +1,13 @@
 #include "Alien.h"
 #include "Resource.h"
 #include "UtilFunc.h"
+#include "MainGameScene.h"
+#include "Particle.h"
+#include "Sound.h"
 
-const float AlienLayer::cAlienScaleArea1 = 0.05f;
-const float AlienLayer::cAlienScaleArea2 = 0.15f;
-const float AlienLayer::cAlienScaleArea3 = 0.3f;
-const float AlienLayer::cAlienScaleArea4 = 0.5f;
+const int AlienLayer::cAlienGenPosX[6] = {290, 320, 350, 380, 410, 440};
+const float AlienLayer::cAlienMoveSpeed[6] = {0.4f, 1.6f, 2.8f, 4.0f, 5.2f, 6.4f};
+const float AlienLayer::cAlienScaleArea[5] = { 0.05f, 0.15f, 0.3f, 0.5f, 2.0f };
 
 bool AlienLayer::init()
 {
@@ -15,17 +17,13 @@ bool AlienLayer::init()
     }
 
 	posX = 0;
+	currentScaleIdx = 0;
 
 	// set layer properties
 	setAnchorPoint(Point(0,0));
-	setScale(cAlienScaleArea1);
+	setScale(cAlienScaleArea[currentScaleIdx++]);
 
 	initWithPlist(p_chorogging, s_chorogging);
-	//initWithTexture(s_chorogging);
-
-	//touch
-	Director* director = Director::getInstance();
-    director->getTouchDispatcher()->addTargetedDelegate(this, 0, true);
 
     return true;
 }
@@ -53,77 +51,59 @@ bool AlienLayer::initWithPlist(const char* plist, const char* frameName)
 		sprt_Alien->runAction( RepeatForever::create( Animate::create(animation) ) );
 
 		// Get random x,y pos
-		posX = UtilFunc::getRandomRangeValue(cAlienGenPosXMin, cAlienGenPosXMax);
+		//posX = UtilFunc::getRandomRangeValue(cAlienGenPosXMin, cAlienGenPosXMax);
+		int randXIdx = (rand() % 6);
+		posX = cAlienGenPosX[randXIdx];
+
 		int yPos = UtilFunc::getRandomRangeValue(cAlienGenPosY-100, cAlienGenPosY);
 		setPosition(Point(posX, yPos));
 
 		// Get random actualDuration
-		float actualDuration = UtilFunc::getRandomRangeValue(0.4f, 6.4f);
+		//float actualDuration = UtilFunc::getRandomRangeValue(0.4f, 6.4f);
+		float actualDuration = cAlienMoveSpeed[randXIdx];
 
 		// Action
 		actionSequenceTopToBottom(this, actualDuration);
-
-		//// Dolphin's Y
-		//int actualY = UtilFunc::getRandomRangeValue(getContentSize().height, UtilFunc::getWinSize().height/1.4 - getContentSize().height);
-
-		//// Set Dolphin to the screen right edge
-		//setPosition(Point(UtilFunc::getWinSize().width + (getContentSize().width / 2), actualY));
-
-		//// Velocity
-		//int actualDuration = UtilFunc::getRandomRangeValue(2.0, 4.0);
-
-		//// Action
-		//int actionIndex = (rand() % 2);
-		//actionIndex>0 ? MarineLifeLayer::actionSequence(this, actualY, actualDuration) : MarineLifeLayer::actionBezier(this, actualY);
-
-		//// bye sprite
-		//SpriteFrameCache::getInstance()->addSpriteFramesWithFile(p_Bye);
-		//sprt_bye = Sprite::createWithSpriteFrame( SpriteFrameCache::getInstance()->getSpriteFrameByName(s_Bye) );
-		//sprt_bye->setPosition( Point(0, frm_marineLife->getOriginalSize().height/2) );
-		//sprt_bye->setVisible(false);
-		//addChild(sprt_bye);
-
-		//// Collision Check sprite
-		///*Sprite* sprtTest = Sprite::create();
-		//sprtTest->setTextureRect(getDolphinRect());
-		//sprtTest->setColor(Color3B::WHITE);
-		//addChild(sprtTest);*/
 	}
 
 	return true;
 }
 
-//void AlienLayer::initWithTexture(const char* texture)
-//{
-//	//Sprite* sprt = Sprite::create(texture);
-//	sprtAlien = Sprite::create(texture);
-//	setAnchorPoint(Point(0,0));
-//	setScale(0.05f);
-//
-//	// get random x,y pos
-//	posX = UtilFunc::getRandomRangeValue(cAlienGenPosXMin, cAlienGenPosXMax);
-//	int yPos = UtilFunc::getRandomRangeValue(cAlienGenPosY-100, cAlienGenPosY);
-//	setPosition(Point(posX, yPos));
-//
-//	this->addChild(sprtAlien, 1);
-//
-//	// get random actualDuration
-//	float actualDuration = UtilFunc::getRandomRangeValue(0.4f, 6.4f);
-//
-//	actionSequenceTopToBottom(this, actualDuration);
-//}
+void AlienLayer::removeMyself()
+{
+	this->stopAllActions();
 
-void AlienLayer::removeMyself(float dt) 
+	// sound
+	Sound::playAlienDownEffect();
+
+	// hide sprite
+	sprt_Alien->setVisible(false);
+
+	if(4 > currentScaleIdx)
+	{
+		// particle effect
+		ParticleSystem* _emitter = ParticleLayer::createWithParticlePlist(ALIEN_FRAME_FILE);
+		_emitter->setPosition(0, 0);
+		addChild(_emitter);
+	}
+
+	scheduleOnce(schedule_selector(AlienLayer::removeMyself), 1);
+}
+
+void AlienLayer::removeMyself(float dt)
 {
 	this->removeFromParentAndCleanup(true);
 }
 
-Rect AlienLayer::getRect()
+Rect AlienLayer::getAlienRect()
 {
-	//Size s = sprtAlien->getContentSize();
-	Size s = sprtfrm_Alien->getOriginalSize();
+	float rectWidth = sprt_Alien->getContentSize().width * cAlienScaleArea[currentScaleIdx];
+	float rectHeight = sprt_Alien->getContentSize().height * cAlienScaleArea[currentScaleIdx];
 	
-    return Rect(-s.width / 2, -s.height / 2, s.width, s.height);
+	return Rect( this->getPosition().x - rectWidth / 2, 
+		         this->getPosition().y - rectHeight / 2,
+				 rectWidth,
+				 rectHeight );
 }
 
 void AlienLayer::onEnter()
@@ -133,60 +113,63 @@ void AlienLayer::onEnter()
 
 void AlienLayer::onExit()
 {
-    Director* director = Director::getInstance();
-    director->getTouchDispatcher()->removeDelegate(this);
     Layer::onExit();
-}
-
-bool AlienLayer::containsTouchLocation(Touch* touch)
-{
-    return getRect().containsPoint(convertTouchToNodeSpaceAR(touch));
-}
-
-bool AlienLayer::ccTouchBegan(Touch* touch, Event* event)
-{
-    if ( !containsTouchLocation(touch) )
-	{
-		return false;
-	}
-    
-	CCLog("toched!");
-	removeMyself(0);
-
-    return true;
-}
-
-void AlienLayer::ccTouchMoved(Touch* touch, Event* event)
-{
-}
-
-void AlienLayer::ccTouchEnded(Touch* touch, Event* event)
-{    
 }
 
 void AlienLayer::actionSequenceTopToBottom(Layer* lyr, float actualDuration)
 {
-	auto moveToArea2 = MoveTo::create(actualDuration, Point(posX, cAlienArea2StartPosY));
-	EaseRateAction* moveToArea2Ease = UtilFunc::getRandomEaseAction(moveToArea2);
-	auto scaleAtArea2 = ScaleTo::create(actualDuration, cAlienScaleArea2, cAlienScaleArea2);
-	auto actionToArea2 = CCSpawn::create(moveToArea2Ease, scaleAtArea2, NULL);
+	auto moveToArea2 = MoveTo::create(actualDuration, Point(posX, cAlienArea1EndPosY));
+	//EaseRateAction* moveToArea2Ease = UtilFunc::getRandomEaseAction(moveToArea2);
+	auto moveToArea2Ease = EaseIn::create(moveToArea2, 1.2f);
+	auto scaleAtArea2 = ScaleTo::create(0, cAlienScaleArea[1], cAlienScaleArea[1]);
+	auto actionToArea2 = Sequence::create(moveToArea2Ease, scaleAtArea2, NULL);
 
-	// adjust actualX
+	auto actionToAreaDone = CallFuncN::create( CC_CALLBACK_1(AlienLayer::moveToAreaFinished, this) );	// common
+
+	// process between area 
+	auto setToArea2 = MoveTo::create(0, Point(posX, cAlienArea2StartPosY));
 	int posX2 = adjustActualPosX(posX);
 
-	auto moveToArea3 = MoveTo::create(actualDuration, Point(posX2, cAlienArea3StartPosY));
-	EaseRateAction* moveToArea3Ease = UtilFunc::getRandomEaseAction(moveToArea3);
-	auto scaleAtArea3 = ScaleTo::create(actualDuration, cAlienScaleArea3, cAlienScaleArea3);
-	auto actionToArea3 = CCSpawn::create(moveToArea3Ease, scaleAtArea3, NULL);
+	auto moveToArea3 = MoveTo::create(actualDuration, Point(posX2, cAlienArea2EndPosY));
+	//EaseRateAction* moveToArea3Ease = UtilFunc::getRandomEaseAction(moveToArea3);
+	auto moveToArea3Ease = EaseInOut::create(moveToArea3, 1.2f);
+	auto scaleAtArea3 = ScaleTo::create(0, cAlienScaleArea[2], cAlienScaleArea[2]);
+	auto actionToArea3 = Sequence::create(moveToArea3Ease, scaleAtArea3, NULL);
 
+	auto setToArea3 = MoveTo::create(0, Point(posX2, cAlienArea3StartPosY));
 	int posX3 = adjustActualPosX(posX2);
 
-	auto moveToArea4 = MoveTo::create(actualDuration, Point(posX3, cAlienArea4StartPosY));
-	EaseRateAction* moveToArea4Ease = UtilFunc::getRandomEaseAction(moveToArea4);
-	auto scaleAtArea4 = ScaleTo::create(actualDuration, cAlienScaleArea4, cAlienScaleArea4);
-	auto actionToArea4 = CCSpawn::create( moveToArea4Ease, scaleAtArea4, NULL);
+	auto moveToArea4 = MoveTo::create(actualDuration, Point(posX3, cAlienArea3EndPosY));
+	//EaseRateAction* moveToArea4Ease = UtilFunc::getRandomEaseAction(moveToArea4);
+	auto moveToArea4Ease = EaseOut::create(moveToArea4, 1.2f);
+	auto scaleAtArea4 = ScaleTo::create(0, cAlienScaleArea[3], cAlienScaleArea[3]);
+	auto actionToArea4 = Sequence::create( moveToArea4Ease, scaleAtArea4, NULL);
 
-	lyr->runAction( CCSequence::create(actionToArea2, actionToArea3, actionToArea4, NULL) );
+	auto moveToAttack = MoveTo::create(0, Point(360, 0));
+	auto scaleToAttack = ScaleTo::create(0, cAlienScaleArea[4], cAlienScaleArea[4]);
+	auto actionToAttack = Sequence::create(moveToAttack, scaleToAttack, NULL);
+
+	auto actionDone = CallFuncN::create( CC_CALLBACK_1(AlienLayer::moveFinished, this) );
+
+	lyr->runAction( CCSequence::create(actionToArea2, actionToAreaDone, setToArea2, actionToArea3, actionToAreaDone, setToArea3, actionToArea4, actionToAreaDone, actionToAttack, actionDone, NULL) );
+}
+
+void AlienLayer::moveToAreaFinished(Object* pSender)
+{
+	setZOrder(getZOrder() + 2);
+	currentScaleIdx++;
+}
+
+void AlienLayer::moveFinished(Object* pSender)
+{
+	alienAttack();
+	scheduleOnce( schedule_selector(AlienLayer::removeMyself), 1);
+}
+
+void AlienLayer::alienAttack()
+{
+	MainGameLayer* parent = (MainGameLayer*)getParent();
+	parent->runDamagedEffect();
 }
 
 int AlienLayer::adjustActualPosX(int actualPosX)

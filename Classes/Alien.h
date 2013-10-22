@@ -11,49 +11,47 @@ public:
 	CREATE_FUNC(AlienLayer);
     virtual bool init();
 
+	void removeMyself();
 	void removeMyself(float dt);
-	Rect getRect();
-	bool containsTouchLocation(Touch* touch);
+	Rect getAlienRect();
 
-	int posX;	
+	int posX;
+	unsigned int currentScaleIdx;
 	SpriteFrame* sprtfrm_Alien;
 	Sprite* sprt_Alien;
 
-	// touch event
     void onEnter();
     void onExit();
-	bool ccTouchBegan(Touch* touch, Event* event);
-    void ccTouchMoved(Touch* touch, Event* event);
-    void ccTouchEnded(Touch* touch, Event* event);
+
+	// alien start position
+	static const int cAlienGenPosX[6];
+
+	static const float cAlienMoveSpeed[6];
 
 	// alien scale
-	static const float cAlienScaleArea1;
-	static const float cAlienScaleArea2;
-	static const float cAlienScaleArea3;
-	static const float cAlienScaleArea4;
+	static const float cAlienScaleArea[5];
 
 	// alien gen & move area
 	static const int cAlienGenPosY = 1025;
-	static const int cAlienGenPosXMin = 300;
-	static const int cAlienGenPosXMax = 430;
+	static const int cAlienArea1EndPosY = 780;
 
-	static const int cAlienArea2StartPosY = 920;
+	static const int cAlienArea2StartPosY = 880;
 	static const int cAlienArea2PosXMin = 200;
 	static const int cAlienArea2PosXMax = 530;
+	static const int cAlienArea2EndPosY = 380;
 
 	static const int cAlienArea3StartPosY = 550;
 	static const int cAlienArea3PosXMin = 0;
 	static const int cAlienArea3PosXMax = 720;
+	static const int cAlienArea3EndPosY = 100;
 
-	static const int cAlienArea4StartPosY = 100;
-	static const int cAlienArea4PosXMin = 0;
-	static const int cAlienArea4PosXMax = 720;
-
-	//void initWithTexture(const char* texture);
 	bool initWithPlist(const char* plist, const char* frameName);
 	void actionSequenceTopToBottom(Layer* lyr, float actualDuration);
 
+	void moveToAreaFinished(Object* pSender);
+	void moveFinished(Object* pSender);
 	int adjustActualPosX(int actualPosX);
+	void alienAttack();
 };
 
 #endif // __ALIEN_H__
