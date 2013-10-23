@@ -28,7 +28,7 @@ public:
 	bool ccTouchBegan(Touch* touch, Event* event);
     void ccTouchMoved(Touch* touch, Event* event);
     void ccTouchEnded(Touch* touch, Event* event);
-	bool checkTouchAlien(Rect touchRect);
+	bool checkTouchAlien(Touch* touch);
 
 	// effect
 	bool isRunningEffect;

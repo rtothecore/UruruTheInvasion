@@ -2,11 +2,10 @@
 #include "Resource.h"
 #include "UtilFunc.h"
 #include "MainGameScene.h"
-#include "Particle.h"
 #include "Sound.h"
 
 const int AlienLayer::cAlienGenPosX[6] = {290, 320, 350, 380, 410, 440};
-const float AlienLayer::cAlienMoveSpeed[6] = {0.4f, 1.6f, 2.8f, 4.0f, 5.2f, 6.4f};
+const float AlienLayer::cAlienMoveSpeed[6] = {4.8f, 1.6f, 2.8f, 4.0f, 5.2f, 6.4f};
 const float AlienLayer::cAlienScaleArea[5] = { 0.05f, 0.15f, 0.3f, 0.5f, 2.0f };
 
 bool AlienLayer::init()
@@ -71,23 +70,19 @@ bool AlienLayer::initWithPlist(const char* plist, const char* frameName)
 
 void AlienLayer::removeMyself()
 {
-	this->stopAllActions();
-
-	// sound
-	Sound::playAlienDownEffect();
-
-	// hide sprite
-	sprt_Alien->setVisible(false);
-
-	if(4 > currentScaleIdx)
+	if( 1 < currentScaleIdx)
 	{
-		// particle effect
-		ParticleSystem* _emitter = ParticleLayer::createWithParticlePlist(ALIEN_FRAME_FILE);
-		_emitter->setPosition(0, 0);
-		addChild(_emitter);
-	}
+		this->stopAllActions();
 
-	scheduleOnce(schedule_selector(AlienLayer::removeMyself), 1);
+		// sound
+		Sound::playAlienDownEffect();
+
+		// hide sprite
+		//sprt_Alien->setVisible(false);
+		setPosition(-500, -500);
+
+		scheduleOnce(schedule_selector(AlienLayer::removeMyself), 1);
+	}
 }
 
 void AlienLayer::removeMyself(float dt)

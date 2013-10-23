@@ -4,6 +4,7 @@
 #include "Alien.h"
 #include "Tags.h"
 #include "Sound.h"
+#include "Particle.h"
 
 //------------------------------------------------------------------
 //
@@ -151,11 +152,14 @@ void MainGameLayer::onExit()
     Layer::onExit();
 }
 
-bool MainGameLayer::checkTouchAlien(Rect touchRect)
+bool MainGameLayer::checkTouchAlien(Touch* touch)
 {
+	Rect touchRect = UtilFunc::getTouchRect(touch->getLocation(), 40);
+
 	Object* pObj = NULL;
 	Array *arrChildren = getChildren();
 	AlienLayer* alienL;
+	bool alienRemoved = false;
 
 	CCARRAY_FOREACH(arrChildren, pObj)
 	{
@@ -175,9 +179,18 @@ bool MainGameLayer::checkTouchAlien(Rect touchRect)
 			if(alienL->getAlienRect().intersectsRect(touchRect))
 			{
 				alienL->removeMyself();
+				alienRemoved = true;
 				//return true;
 			}
 		}
+	}
+
+	if(alienRemoved) {
+		// Particle effect
+		ParticleSystem* _emitter = ParticleLayer::createWithParticlePlist(ALIEN_FRAME_FILE);
+		_emitter->setScale(0.6f);
+		_emitter->setPosition(touch->getLocation());
+		addChild(_emitter, 8);
 	}
 
 	return false;
@@ -185,9 +198,9 @@ bool MainGameLayer::checkTouchAlien(Rect touchRect)
 
 bool MainGameLayer::ccTouchBegan(Touch* touch, Event* event)
 {
-	Rect touchRect = UtilFunc::getTouchRect(touch->getLocation(), 40);
-
 	///////////////////// sprite for touch check test
+	//Rect touchRect = UtilFunc::getTouchRect(touch->getLocation(), 40);
+
 	//Sprite* sprtTest = Sprite::create();
 	//sprtTest->setPosition(touch->getLocation());
 
@@ -199,7 +212,7 @@ bool MainGameLayer::ccTouchBegan(Touch* touch, Event* event)
 	//addChild(sprtTest, 2);
 	////////////////////
 
-	if( !checkTouchAlien(touchRect) )
+	if( !checkTouchAlien(touch) )
 	{
 		return false;
 	}
